@@ -11,9 +11,9 @@ class StoreItem(scrapy.Item):
     PhoneNo = scrapy.Field()
     Longitude = scrapy.Field()
     Latitude = scrapy.Field()
-    MONPStatus = scrapy.Field()  # TODO: delete. redundant.
+    MONPStatus = scrapy.Field()
     DeliveryStatus = scrapy.Field()
-    OpenNow = scrapy.Field()  # TODO: delete. redundant.
+    OpenNow = scrapy.Field()
     ServiceHours = scrapy.Field()
     Amenities = scrapy.Field()
 
@@ -25,7 +25,6 @@ class ServiceHourItem(scrapy.Item):
     OpenTo = scrapy.Field()
     Is24Hours = scrapy.Field()
     IsClosed = scrapy.Field()
-    # BranchCode = scrapy.Field()
 
 
 class AmenityItem(scrapy.Item):
@@ -35,4 +34,30 @@ class AmenityItem(scrapy.Item):
     MobileOrderandPay = scrapy.Field()
     NitroColdBrew = scrapy.Field()
     StarbucksReserve = scrapy.Field()
-    # StoreCode = scrapy.Field()
+
+
+class MenuItem(scrapy.Item):
+    LastUpdated = scrapy.Field()
+    BranchCode = scrapy.Field()
+
+
+class ItemItem(scrapy.Item):
+    ItemId = scrapy.Field()
+    ItemCode = scrapy.Field()
+    Name = scrapy.Field()
+    Description = scrapy.Field()
+    BasePrice = scrapy.Field()
+    BasePriceDlvr = scrapy.Field()
+    PhotoURLs = scrapy.Field()
+    Sequence = scrapy.Field()
+    ModifierGroup = scrapy.Field()
+    PMTNo = scrapy.Field()
+    PMTRefNo = scrapy.Field()
+    PMTAmount = scrapy.Field()
+    PMTLine = scrapy.Field()
+    IsMOP = scrapy.Field()
+    IsDelivery = scrapy.Field()
+    IsInventoried = scrapy.Field()
+    IsFeatured = scrapy.Field()
+    IsScheduled = scrapy.Field()
+    IsDineIn = scrapy.Field()

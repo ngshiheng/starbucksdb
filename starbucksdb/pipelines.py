@@ -22,25 +22,25 @@ class StarbucksDBPipeline:
         ]
 
         store_data = {
-            "BranchCode": adapter.get("BranchCode"),
-            "OutletCode": adapter.get("OutletCode"),
-            "StoreCode": adapter.get("StoreCode"),
-            "StoreName": adapter.get("StoreName"),
-            "Address": adapter.get("Address"),
-            "PostalCode": adapter.get("PostalCode"),
-            "PhoneNo": adapter.get("PhoneNo"),
-            "Longitude": adapter.get("Longitude"),
-            "Latitude": adapter.get("Latitude"),
-            "MONPStatus": adapter.get("MONPStatus"),
-            "DeliveryStatus": adapter.get("DeliveryStatus"),
-            "OpenNow": adapter.get("OpenNow"),
-            "ServiceHours": service_hours,
-            "Amenities": adapter.get("Amenities"),
+            "branch_code": adapter.get("BranchCode"),
+            "outlet_code": adapter.get("OutletCode"),
+            "store_code": adapter.get("StoreCode"),
+            "store_name": adapter.get("StoreName"),
+            "address": adapter.get("Address"),
+            "postal_code": adapter.get("PostalCode"),
+            "phone_no": adapter.get("PhoneNo"),
+            "longitude": adapter.get("Longitude"),
+            "latitude": adapter.get("Latitude"),
+            "monp_status": adapter.get("MONPStatus"),
+            "delivery_status": adapter.get("DeliveryStatus"),
+            "open_now": adapter.get("OpenNow"),
+            "service_hours": service_hours,
+            "amenities": adapter.get("Amenities"),
         }
 
         with db.atomic():
             Store.insert(**store_data).on_conflict(
-                conflict_target=[Store.BranchCode], update=store_data
+                conflict_target=[Store.branch_code], update=store_data
             ).execute()
 
         return item
