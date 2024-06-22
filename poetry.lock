@@ -581,6 +581,16 @@ packaging = "*"
 w3lib = ">=1.19.0"
 
 [[package]]
+name = "peewee"
+version = "3.17.5"
+description = "a little orm"
+optional = false
+python-versions = "*"
+files = [
+    {file = "peewee-3.17.5.tar.gz", hash = "sha256:e1b6a64192207fd3ddb4e1188054820f42aef0aadfa749e3981af3c119a76420"},
+]
+
+[[package]]
 name = "protego"
 version = "0.3.1"
 description = "Pure-Python robots.txt parser with support for modern conventions"
@@ -977,4 +987,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "87123cfc1acd761426c5826e3a8176cdc431b8feac20f486e6e07bef34176b0d"
+content-hash = "cd0f7d98928958ffa1a3f10692efe333c6da44ab235eee368493babf00d52b5f"
