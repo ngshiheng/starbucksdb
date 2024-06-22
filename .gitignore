@@ -22,3 +22,6 @@ venv
 
 # Windows
 Thumbs.db
+
+# SQLite
+*.db

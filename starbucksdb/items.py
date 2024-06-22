@@ -11,9 +11,9 @@ class StoreItem(scrapy.Item):
     PhoneNo = scrapy.Field()
     Longitude = scrapy.Field()
     Latitude = scrapy.Field()
-    MONPStatus = scrapy.Field()
+    MONPStatus = scrapy.Field()  # TODO: delete. redundant.
     DeliveryStatus = scrapy.Field()
-    OpenNow = scrapy.Field()  # TODO: delete. not required
+    OpenNow = scrapy.Field()  # TODO: delete. redundant.
     ServiceHours = scrapy.Field()
     Amenities = scrapy.Field()
 
