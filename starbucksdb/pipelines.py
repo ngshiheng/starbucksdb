@@ -1,7 +1,9 @@
+import datetime
+
 from itemadapter import ItemAdapter
 
 from starbucksdb.items import MenuItem, StoreItem
-from starbucksdb.models.database import Item, Store, create_tables, db
+from starbucksdb.models.database import Item, Price, Store, create_tables, db
 
 
 class StarbucksDBPipeline:
@@ -50,43 +52,42 @@ class StarbucksDBPipeline:
             branch_code = adapter["BranchCode"]
             store = Store.get(Store.branch_code == branch_code)
 
-            for menu_item in adapter["Items"]:
+            for adapter_item in adapter["Items"]:
                 item_data = {
                     "store": store,
-                    "item_id": menu_item["ItemId"],
-                    "item_code": menu_item["ItemCode"],
-                    "name": menu_item["Name"],
-                    "description": menu_item["Description"],
-                    "photo_urls": menu_item["PhotoURLs"],
-                    "is_mobile_order_pay": menu_item["IsMOP"],
-                    "is_delivery": menu_item["IsDelivery"],
-                    "is_inventoried": menu_item["IsInventoried"],
-                    "is_featured": menu_item["IsFeatured"],
-                    "is_scheduled": menu_item["IsScheduled"],
-                    "is_dine_in": menu_item["IsDineIn"],
+                    "item_id": adapter_item["ItemId"],
+                    "item_code": adapter_item["ItemCode"],
+                    "name": adapter_item["Name"],
+                    "description": adapter_item["Description"],
+                    "photo_urls": adapter_item["PhotoURLs"],
+                    "is_mobile_order_pay": adapter_item["IsMOP"],
+                    "is_delivery": adapter_item["IsDelivery"],
+                    "is_inventoried": adapter_item["IsInventoried"],
+                    "is_featured": adapter_item["IsFeatured"],
+                    "is_scheduled": adapter_item["IsScheduled"],
+                    "is_dine_in": adapter_item["IsDineIn"],
                 }
 
                 with db.atomic():
-                    i, _ = Item.get_or_create(
+                    menu_item, _ = Item.get_or_create(
                         store=store,
-                        item_id=menu_item["ItemId"],
+                        item_id=adapter_item["ItemId"],
                         defaults=item_data,
                     )
 
                     price_data = {
-                        "item": i,
+                        "item": menu_item,
                         "store": store,
-                        "base_price": adapter.get("BasePrice", 0),
-                        "delivery_price": adapter.get("BasePriceDlvr", 0),
+                        "base_price": adapter_item["BasePrice"],
+                        "delivery_price": adapter_item["BasePriceDlvr"],
                     }
 
-                    # price = Price(
-                    #     item=item,
-                    #     store=store,
-                    #     base_price=int(price_data["base_price"]),
-                    #     delivery_price=int(price_data["delivery_price"]),
-                    #     effective_date=datetime.datetime.now(),
-                    # )
-                    # price.save()
+                    Price.create(
+                        item=menu_item,
+                        store=store,
+                        base_price=price_data["base_price"],
+                        delivery_price=price_data["delivery_price"],
+                        effective_date=datetime.datetime.now(),
+                    )
 
         return item
