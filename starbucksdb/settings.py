@@ -14,7 +14,8 @@ NEWSPIDER_MODULE = "starbucksdb.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-# USER_AGENT = "starbucksdb (+http://www.yourdomain.com)"
+USER_AGENT = "starbucksSG/330 CFNEtwork/1399 Darwin/22.1.0"
+
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False

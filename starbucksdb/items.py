@@ -39,6 +39,9 @@ class AmenityItem(scrapy.Item):
 class MenuItem(scrapy.Item):
     LastUpdated = scrapy.Field()
     BranchCode = scrapy.Field()
+    ServiceHours = scrapy.Field()
+    Categories = scrapy.Field()
+    Items = scrapy.Field()
 
 
 class ItemItem(scrapy.Item):
