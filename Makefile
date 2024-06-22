@@ -25,7 +25,7 @@ dev:	## install packages and prepare environment with poetry.
 ##@ Usage
 .PHONY: run
 run:	## run spider.
-	@rm assets/starbucks.db
+	@rm -rf assets/starbucks.db
 	@$(POETRY) run scrapy crawl singapore
 	@echo "Done."
 

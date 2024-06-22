@@ -36,4 +36,5 @@ class SingaporeSpider(scrapy.Spider):
         assert branch_code == menu_data["BranchCode"], "Branch code mismatch"
 
         menu_item = parse_menu_data(menu_data)
+
         yield menu_item
