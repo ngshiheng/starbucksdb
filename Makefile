@@ -24,7 +24,7 @@ dev:	## install packages and prepare environment with poetry.
 
 ##@ Usage
 .PHONY: run
-run:	## run all spiders
+run:	## run spider.
 	@$(POETRY) run scrapy crawl singapore
 	@echo "Done."
 
