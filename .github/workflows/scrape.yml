@@ -39,6 +39,7 @@ jobs:
               with:
                   name: starbucks.db
                   path: ./data/
+              continue-on-error: true
 
             - name: Run Scrapy crawl
               run: poetry run scrapy crawl singapore
