@@ -41,7 +41,7 @@ jobs:
                   path: ./data/
               continue-on-error: true
 
-            - name: Run Scrapy crawl
+            - name: Run scrapy crawl
               run: poetry run scrapy crawl singapore
 
             - name: Upload updated artifact
@@ -50,3 +50,14 @@ jobs:
                   name: starbucks.db
                   path: ./data/
                   if-no-files-found: error
+            - name: Deploy to vercel
+              run: |-
+                  datasette publish vercel data/starbucks.db \
+                      --install=datasette-hashed-urls
+                      --install=datasette-cluster-map
+                      --token="$VERCEL_TOKEN"
+                      --service=starbucksdb
+                      --setting allow_download off 
+                      --setting allow_csv_stream off 
+                      --setting max_csv_mb 0
+                      --extra-options "-i"
