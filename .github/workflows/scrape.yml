@@ -54,9 +54,10 @@ jobs:
             - name: Deploy to vercel
               run: |-
                   datasette publish vercel data/starbucks.db \
+                      --project=starbucksdb
                       --install=datasette-hashed-urls
                       --install=datasette-cluster-map
-                      --token="$VERCEL_TOKEN"
+                      --token=${{ secrets.VERCEL_TOKEN }}
                       --service=starbucksdb
                       --setting allow_download off 
                       --setting allow_csv_stream off 
