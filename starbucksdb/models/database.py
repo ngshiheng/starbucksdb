@@ -3,7 +3,7 @@ import datetime
 from peewee import (
     BooleanField,
     CharField,
-    DateTimeField,
+    DateField,
     FloatField,
     ForeignKeyField,
     IntegerField,
@@ -77,7 +77,7 @@ class Price(BaseModel):
     store = ForeignKeyField(Store, backref="prices")
     base_price = IntegerField()
     delivery_price = IntegerField()
-    effective_date = DateTimeField(default=datetime.datetime.now)
+    effective_date = DateField(default=datetime.datetime.now)
 
     class Meta:
         table_name = "item_prices"
