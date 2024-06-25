@@ -58,7 +58,6 @@ jobs:
                       --install=datasette-hashed-urls
                       --install=datasette-cluster-map
                       --token=${{ secrets.VERCEL_TOKEN }}
-                      --service=starbucksdb
                       --setting allow_download off 
                       --setting allow_csv_stream off 
                       --setting max_csv_mb 0
