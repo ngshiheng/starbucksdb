@@ -11,7 +11,7 @@ from peewee import (
 )
 from playhouse.sqlite_ext import JSONField, SqliteExtDatabase
 
-db = SqliteExtDatabase("assets/starbucks.db", pragmas={"journal_mode": "wal"})
+db = SqliteExtDatabase("data/starbucks.db", pragmas={"journal_mode": "wal"})
 
 
 class BaseModel(Model):
@@ -81,7 +81,7 @@ class Price(BaseModel):
 
     class Meta:
         table_name = "item_prices"
-        indexes = ((("item", "store"), True),)
+        indexes = ((("item", "store", "effective_date"), True),)
 
 
 def create_tables():
