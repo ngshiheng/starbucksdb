@@ -4,12 +4,13 @@ on:
     push:
     workflow_dispatch:
     schedule:
-        - cron: "0 0 * * 0"
+        - cron: "0 0 * * 0" # Every Sunday at 00:00
 
 env:
     PYTHON_VERSION: "3.11"
     POETRY_VERSION: "1.7"
     POETRY_URL: https://install.python-poetry.org
+    VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
 jobs:
     crawl-and-update:
@@ -60,7 +61,7 @@ jobs:
                       --project=starbucksdb
                       --install=datasette-hashed-urls
                       --install=datasette-cluster-map
-                      --token=${{ secrets.VERCEL_TOKEN }}
+                      --token="$VERCEL_TOKEN"
                       --setting allow_download off 
                       --setting allow_csv_stream off 
                       --setting max_csv_mb 0
