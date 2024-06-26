@@ -2,6 +2,13 @@ name: Scrape latest data
 
 on:
     push:
+        branches:
+            - "main"
+        paths:
+            - "**.py"
+            - "poetry.lock"
+            - ".github/workflows/**"
+
     workflow_dispatch:
     schedule:
         - cron: "0 0 * * 0" # Every Sunday at 00:00
