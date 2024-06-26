@@ -19,7 +19,7 @@ jobs:
 
             - name: Install poetry & datasette
               run: |
-                  pipx install poetry
+                  pipx install poetry==${{ env.POETRY_VERSION }}
                   pipx install datasette
 
             - name: Set up Python
@@ -29,9 +29,9 @@ jobs:
                   cache: poetry
                   cache-dependency-path: poetry.lock
 
-            - name: Set Poetry environment
+            - name: Set poetry environment
               run: |
-                  poetry env use ${{ env.POETRY_VERSION }}
+                  poetry env use ${{ env.PYTHON_VERSION }}
 
             - name: Install dependencies
               run: |
