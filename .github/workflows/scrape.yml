@@ -44,18 +44,16 @@ jobs:
                   path: ./data/
               continue-on-error: true
 
+            - name: Get current date
+              run: echo "today={$(date --rfc-3339=date)}" >> $GITHUB_ENV
+
             - name: Restore scrapy cache
               id: scrapy-cache-restore
               uses: actions/cache/restore@v4
               with:
                   path: |
                       .scrapy
-                  key: ${{ runner.os }}-pypoetry-${{ hashFiles('**/poetry.lock') }}-$(date --rfc-3339=date)
-
-            - name: Check if scrapy cache is restored
-              if: steps.scrapy-cache-restore.outputs.cache-hit == 'true'
-              run: |
-                  echo "Scrapy cache restored"
+                  key: ${{ runner.os }}-pypoetry-${{ hashFiles('**/poetry.lock') }}-${{ env.today  }}
 
             - name: Run scrapy crawl
               run: poetry run scrapy crawl singapore
@@ -79,6 +77,5 @@ jobs:
               env:
                   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
               run: |-
-                  ls data/
                   datasette install datasette-publish-vercel
                   datasette publish vercel data/starbucks.db  --project=starbucksdb --install=datasette-hashed-urls --install=datasette-cluster-map --token="$VERCEL_TOKEN" --setting allow_download off  --setting allow_csv_stream off  --setting max_csv_mb 0 --extra-options "-i"
