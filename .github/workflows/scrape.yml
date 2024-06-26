@@ -45,7 +45,7 @@ jobs:
               continue-on-error: true
 
             - name: Get current date
-              run: echo "today={$(date --rfc-3339=date)}" >> $GITHUB_ENV
+              run: echo "today=$(date --rfc-3339=date)" >> $GITHUB_ENV
 
             - name: Restore scrapy cache
               id: scrapy-cache-restore
