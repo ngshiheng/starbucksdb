@@ -7,6 +7,44 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import copy
+
+import scrapy.utils.log
+from colorlog import ColoredFormatter
+
+# Define the color formatter
+color_formatter = ColoredFormatter(
+    (
+        "%(log_color)s%(levelname)-5s%(reset)s "
+        "%(yellow)s[%(asctime)s]%(reset)s"
+        "%(white)s %(name)s %(funcName)s %(bold_purple)s:%(lineno)d%(reset)s "
+        "%(log_color)s%(message)s%(reset)s"
+    ),
+    datefmt="%y-%m-%d %H:%M:%S",
+    log_colors={
+        "DEBUG": "blue",
+        "INFO": "bold_cyan",
+        "WARNING": "red",
+        "ERROR": "bg_bold_red",
+        "CRITICAL": "red,bg_white",
+    },
+)
+
+# Copy the original _get_handler function
+_get_handler = copy.copy(scrapy.utils.log._get_handler)
+
+
+# Define a custom _get_handler function that sets the color formatter
+def _get_handler_custom(*args, **kwargs):
+    handler = _get_handler(*args, **kwargs)
+    handler.setFormatter(color_formatter)
+    return handler
+
+
+# Replace the original _get_handler with the custom one
+scrapy.utils.log._get_handler = _get_handler_custom
+
+
 BOT_NAME = "starbucksdb"
 
 SPIDER_MODULES = ["starbucksdb.spiders"]
