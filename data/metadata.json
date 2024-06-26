@@ -2,7 +2,7 @@
     "title": "Starbucks Database (Singapore)",
     "description": "A comprehensive database of Starbucks stores, menu items, and prices in Singapore.",
     "license": "MIT",
-    "license_url": "",
+    "license_url": "https://github.com/ngshiheng/starbucksdb/blob/main/LICENSE",
     "source": "Starbucks Singapore",
     "source_url": "https://www.starbucks.com.sg/",
     "databases": {
