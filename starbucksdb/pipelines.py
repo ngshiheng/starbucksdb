@@ -75,19 +75,28 @@ class StarbucksDBPipeline:
                         defaults=item_data,
                     )
 
-                    price_data = {
-                        "item": menu_item,
-                        "store": store,
-                        "base_price": adapter_item["BasePrice"],
-                        "delivery_price": adapter_item["BasePriceDlvr"],
-                    }
+                    new_base_price = adapter_item["BasePrice"]
+                    new_delivery_price = adapter_item["BasePriceDlvr"]
 
-                    Price.create(
-                        item=menu_item,
-                        store=store,
-                        base_price=price_data["base_price"],
-                        delivery_price=price_data["delivery_price"],
-                        effective_date=datetime.datetime.now(),
+                    last_price = (
+                        Price.select()
+                        .where((Price.item == menu_item) & (Price.store == store))
+                        .order_by(Price.effective_date.desc())
+                        .first()
                     )
+
+                    if last_price is None or (
+                        last_price.base_price != new_base_price
+                        or last_price.delivery_price != new_delivery_price
+                    ):
+                        # Create a new price entry if there's no previous entry
+                        # or if the price has changed
+                        Price.create(
+                            item=menu_item,
+                            store=store,
+                            base_price=new_base_price,
+                            delivery_price=new_delivery_price,
+                            effective_date=datetime.date.today(),
+                        )
 
         return item
