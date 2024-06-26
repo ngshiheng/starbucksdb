@@ -1,0 +1,94 @@
+{
+    "title": "Starbucks Database (Singapore)",
+    "description": "A comprehensive database of Starbucks stores, menu items, and prices in Singapore.",
+    "license": "MIT",
+    "license_url": "",
+    "source": "Starbucks Singapore",
+    "source_url": "https://www.starbucks.com.sg/",
+    "databases": {
+        "starbucks": {
+            "queries": {
+                "caffe_latte_prices": {
+                    "sql": "SELECT s.id AS store_id, s.store_name, s.longitude, s.latitude, m.name AS item_name, p.base_price / 100.0 AS price_sgd FROM stores s JOIN menu_items m ON s.id = m.store_id JOIN item_prices p ON m.id = p.item_id AND s.id = p.store_id WHERE m.name = 'Caffè Latte' AND p.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = m.id AND store_id = s.id) ORDER BY s.store_name",
+                    "title": "Caffè Latte Prices Across Singapore",
+                    "description": "Shows the current price of Caffè Latte at all Starbucks locations in Singapore",
+                    "plugins": {
+                        "datasette-cluster-map": {
+                            "latitude_column": "latitude",
+                            "longitude_column": "longitude",
+                            "popup_html": "<b>{store_name}</b><br>Caffè Latte Price: S${price_sgd:.2f}"
+                        }
+                    }
+                },
+                "stores_with_wifi_and_mobile_order": {
+                    "sql": "SELECT store_name, address, postal_code, phone_no, longitude, latitude, json_extract(amenities, '$.FreeWifi') as has_wifi, json_extract(amenities, '$.MobileOrderandPay') as has_mobile_order FROM stores WHERE json_extract(amenities, '$.FreeWifi') = true AND json_extract(amenities, '$.MobileOrderandPay') = true",
+                    "title": "Stores with Free WiFi and Mobile Order & Pay",
+                    "description": "Lists all Starbucks stores in Singapore that offer both free WiFi and Mobile Order & Pay service, including their geographic coordinates",
+                    "plugins": {
+                        "datasette-cluster-map": {
+                            "latitude_column": "latitude",
+                            "longitude_column": "longitude",
+                            "popup_html": "<b>{store_name}</b><br>Address: {address}<br>Phone: {phone_no}"
+                        }
+                    }
+                },
+                "amenities_summary": {
+                    "sql": "SELECT COUNT(*) as total_stores, SUM(CASE WHEN json_extract(amenities, '$.24Hours') = true THEN 1 ELSE 0 END) as stores_24h, SUM(CASE WHEN json_extract(amenities, '$.Cashless') = true THEN 1 ELSE 0 END) as stores_cashless, SUM(CASE WHEN json_extract(amenities, '$.FreeWifi') = true THEN 1 ELSE 0 END) as stores_with_wifi, SUM(CASE WHEN json_extract(amenities, '$.MobileOrderandPay') = true THEN 1 ELSE 0 END) as stores_with_mobile_order, SUM(CASE WHEN json_extract(amenities, '$.NitroColdBrew') = true THEN 1 ELSE 0 END) as stores_with_nitro, SUM(CASE WHEN json_extract(amenities, '$.StarbucksReserve') = true THEN 1 ELSE 0 END) as reserve_stores FROM stores",
+                    "title": "Amenities Summary",
+                    "description": "Provides a summary of how many stores offer each amenity"
+                }
+            },
+            "tables": {
+                "stores": {
+                    "sortable_columns": [
+                        "id",
+                        "branch_code",
+                        "store_name",
+                        "postal_code"
+                    ],
+                    "facets": ["monp_status", "delivery_status", "open_now"],
+                    "plugins": {
+                        "datasette-cluster-map": {
+                            "latitude_column": "latitude",
+                            "longitude_column": "longitude"
+                        }
+                    },
+                    "description": "Information about Starbucks store locations in Singapore"
+                },
+                "menu_items": {
+                    "sortable_columns": [
+                        "id",
+                        "store_id",
+                        "name",
+                        "is_mobile_order_pay",
+                        "is_delivery",
+                        "is_featured"
+                    ],
+                    "facets": [
+                        "store_id",
+                        "is_mobile_order_pay",
+                        "is_delivery",
+                        "is_featured",
+                        "is_scheduled",
+                        "is_dine_in"
+                    ],
+                    "description": "Starbucks menu items available in Singapore stores"
+                },
+                "item_prices": {
+                    "sortable_columns": [
+                        "id",
+                        "item_id",
+                        "store_id",
+                        "base_price",
+                        "delivery_price",
+                        "effective_date"
+                    ],
+                    "facets": ["store_id", "effective_date"],
+                    "description": "Pricing information for Starbucks menu items in Singapore"
+                }
+            }
+        }
+    },
+    "about": "Made by jerrynsh.com",
+    "about_url": "https://jerrynsh.com/"
+}
