@@ -2,6 +2,35 @@
 
 StarbucksDB is a data collection and storage project focused on Starbucks store and menu information. It uses web scraping techniques to gather data about Starbucks locations, menu items, and pricing, storing this information in a SQLite database for easy access and analysis.
 
+## How It Works
+
+```mermaid
+graph TB
+    subgraph Starbucks
+        api[Starbucks API]
+    end
+
+    subgraph Github
+        subgraph Actions
+            scraper[Scrapy Job]
+        end
+        subgraph Artifacts
+            db[(SQLite DB)]
+        end
+    end
+
+
+    subgraph Vercel
+        deployment[Datasette]
+    end
+
+    scraper --> |1. Fetch DB| db
+    scraper --> |2. Fetch Data| api
+    scraper --> |3. Save to DB| db
+    scraper --> |4. Publish to Vercel | deployment
+    deployment --> |5. Access Data| client[Client]
+```
+
 ## Installation
 
 1. Clone the repository: `git clone https://github.com/ngshiheng/starbucksdb.git`
