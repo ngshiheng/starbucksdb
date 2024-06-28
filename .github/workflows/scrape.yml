@@ -58,6 +58,9 @@ jobs:
                   github-token: ${{ secrets.GH_PAT  }}
               continue-on-error: true
 
+            - name: Display downloaded file
+              run: ls data/
+
             - name: Get current date
               run: echo "today=$(date --rfc-3339=date)" >> $GITHUB_ENV
 
