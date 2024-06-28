@@ -46,15 +46,15 @@ jobs:
 
             - name: Get latest artifact id
               run: |
-                  ARTIFACT_ID=$(curl -s "https://api.github.com/repos/${{ github.repository }}/actions/artifacts?per_page=1" | jq '.artifacts[0].id')
-                  echo "artifact_id=$ARTIFACT_ID" >> $GITHUB_ENV
+                  ARTIFACT_RUN_ID=$(curl -s "https://api.github.com/repos/${{ github.repository }}/actions/artifacts?per_page=1" | jq '.artifacts[0].workflow_run.id')
+                  echo "artifact_run_id=$ARTIFACT_RUN_ID" >> $GITHUB_ENV
 
             - name: Download artifact
               uses: actions/download-artifact@v4
               with:
                   name: starbucksdb
                   path: ./data/
-                  run-id: ${{ env.artifact_id }}
+                  run-id: ${{ env.artifact_run_id }}
                   github-token: ${{ secrets.GH_PAT  }}
               continue-on-error: true
 
