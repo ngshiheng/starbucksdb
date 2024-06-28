@@ -52,7 +52,7 @@ jobs:
             - name: Download artifact
               uses: actions/download-artifact@v4
               with:
-                  name: starbucks.db
+                  name: starbucksdb
                   path: ./data/
                   run-id: ${{ env.artifact_id }}
                   github-token: ${{ secrets.GH_PAT  }}
@@ -83,8 +83,8 @@ jobs:
             - name: Upload updated artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: starbucks.db
-                  path: ./data/
+                  name: starbucksdb
+                  path: ./data/starbucks.db
                   if-no-files-found: error
 
             - name: Deploy to vercel
