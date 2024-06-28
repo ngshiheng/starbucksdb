@@ -55,7 +55,7 @@ jobs:
                   name: starbucks.db
                   path: ./data/
                   run-id: ${{ env.artifact_id }}
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  github-token: ${{ secrets.GH_PAT  }}
               continue-on-error: true
 
             - name: Get current date
