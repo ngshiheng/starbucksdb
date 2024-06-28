@@ -50,6 +50,8 @@ jobs:
                   name: starbucks.db
                   path: ./data/
                   merge-multiple: true
+                  run-id: ${{ github.event.workflow_run.id }}
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
               continue-on-error: true
 
             - name: Get current date
