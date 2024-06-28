@@ -49,6 +49,7 @@ jobs:
               with:
                   name: starbucks.db
                   path: ./data/
+                  merge-multiple: true
               continue-on-error: true
 
             - name: Get current date
