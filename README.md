@@ -8,29 +8,39 @@ StarbucksDB is a data collection and storage project focused on Starbucks store 
 
 ```mermaid
 graph TB
-    subgraph Starbucks
-        api[Starbucks API]
-    end
-
-    subgraph Github
-        subgraph Actions
-            scraper[Scrapy Job]
-        end
-        subgraph Artifacts
-            db[(SQLite DB)]
-        end
-    end
-
+    %% Define styles
+    classDef cloudStyle fill:#e0e4cc,stroke:#94a1a9,stroke-width:2px,rx:15,ry:15;
+    classDef actions fill:#ccf,stroke:#333,stroke-width:2px;
 
     subgraph Vercel
         deployment[Datasette]
+        class deployment vercel;
     end
 
-    scraper --> |1. Fetch DB| db
-    scraper --> |2. Fetch Data| api
-    scraper --> |3. Save to DB| db
-    scraper --> |4. Publish to Vercel | deployment
-    deployment --> |5. Access Data| client[Client]
+    subgraph GitHub
+        subgraph Actions
+            scraper[Scrapy Job]
+            class scraper actions;
+        end
+        subgraph Artifacts
+            db[(SQLite)]
+            class db artifacts;
+        end
+    end
+
+    subgraph Starbucks
+        api[API]
+        class api starbucks;
+    end
+
+    db --> |1. Download| scraper
+    api --> |2. Fetch Data| scraper
+    scraper --> |3. Upload| db
+    scraper --> |4. Publish Data| deployment
+    deployment --> |5. View/Access Data| client[User]
+
+    %% Apply cloud styles
+    class Vercel,GitHub,Starbucks cloudStyle;
 ```
 
 ## Installation
