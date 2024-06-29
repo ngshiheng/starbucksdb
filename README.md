@@ -8,10 +8,6 @@ StarbucksDB is a data collection and storage project focused on Starbucks store 
 
 ```mermaid
 graph TB
-    %% Define styles
-    classDef cloudStyle fill:#e0e4cc,stroke:#94a1a9,stroke-width:2px,rx:15,ry:15;
-    classDef actions fill:#ccf,stroke:#333,stroke-width:2px;
-
     subgraph Vercel
         deployment[Datasette]
         class deployment vercel;
@@ -36,11 +32,13 @@ graph TB
     db --> |1. Download| scraper
     api --> |2. Fetch Data| scraper
     scraper --> |3. Upload| db
-    scraper --> |4. Publish Data| deployment
+    scraper --> |4. Publish| deployment
     deployment --> |5. View/Access Data| client[User]
 
-    %% Apply cloud styles
-    class Vercel,GitHub,Starbucks cloudStyle;
+    %% Apply dotted line styles
+    style Vercel stroke-dasharray: 5 5;
+    style GitHub stroke-dasharray: 5 5;
+    style Starbucks stroke-dasharray: 5 5;
 ```
 
 ## Installation
