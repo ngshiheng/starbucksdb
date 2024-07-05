@@ -3,7 +3,9 @@ ENVIRONMENT ?= development
 
 SHELL=/bin/bash
 POETRY := $(shell command -v poetry 2> /dev/null)
-DOCKER := $(shell command -v docker 2> /dev/null)
+DATASETTE := $(shell command -v datasette 2> /dev/null)
+SQLITE_FILE = data/starbucks.db
+
 
 .DEFAULT_GOAL := help
 ##@ Helper
@@ -28,6 +30,9 @@ run:	## run spider.
 	@rm -rf data/starbucks.db
 	@$(POETRY) run scrapy crawl singapore
 	@echo "Done."
+datasette:	## run datasette.
+	@[ -f $(SQLITE_FILE) ] && echo "File $(SQLITE_FILE) exists." || { echo "File $(SQLITE_FILE) does not exist." >&2; exit 1; }
+	@$(DATASETTE) $(SQLITE_FILE) --metadata data/metadata.json
 
 
 ##@ Contributing
