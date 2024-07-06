@@ -20,22 +20,30 @@
                         }
                     }
                 },
+                "recent_price_changes": {
+                    "sql": "WITH recent_prices AS (SELECT item_id, store_id, base_price, delivery_price, effective_date, LAG(base_price / 100.0) OVER (PARTITION BY item_id, store_id ORDER BY effective_date) AS previous_base_price, LAG(delivery_price / 100.0)  OVER (PARTITION BY item_id, store_id ORDER BY effective_date) AS previous_delivery_price, LAG(effective_date) OVER (PARTITION BY item_id, store_id ORDER BY effective_date) AS previous_date FROM item_prices WHERE effective_date >= date('now', '-30 days')) SELECT m.name, s.store_name, rp.previous_base_price AS old_base_price, rp.base_price / 100.0 AS new_base_price, rp.previous_delivery_price AS old_delivery_price, rp.delivery_price / 100.0 AS new_delivery_price, rp.previous_date AS old_date, rp.effective_date AS new_date FROM recent_prices rp JOIN menu_items m ON rp.item_id = m.id JOIN stores s ON rp.store_id = s.id WHERE rp.previous_base_price IS NOT NULL ORDER BY rp.effective_date DESC LIMIT 20",
+                    "title": "Recent Price Changes",
+                    "description": "Shows price changes in the last 30 days across all items and stores, comparing old and new prices"
+                },
+                "largest_price_increases": {
+                    "sql": "WITH price_changes AS (SELECT p1.item_id, m.name, s.store_name, p1.base_price / 100.0 AS new_price, p2.base_price / 100.0 AS old_price, p1.effective_date AS new_date, p2.effective_date AS old_date, (p1.base_price - p2.base_price) / 100.0 AS price_difference FROM item_prices p1 JOIN item_prices p2 ON p1.item_id = p2.item_id AND p1.store_id = p2.store_id JOIN menu_items m ON p1.item_id = m.id JOIN stores s ON p1.store_id = s.id WHERE p1.effective_date > p2.effective_date AND p1.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = p1.item_id AND store_id = p1.store_id) AND p2.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = p1.item_id AND store_id = p1.store_id AND effective_date < p1.effective_date)) SELECT name, store_name, old_price, new_price, price_difference, old_date, new_date FROM price_changes ORDER BY price_difference DESC LIMIT 20",
+                    "title": "Largest Price Increases",
+                    "description": "Shows the items with the largest price increases, comparing the most recent price to the previous price"
+                },
+                "average_price_change_by_store": {
+                    "sql": "WITH price_changes AS (SELECT p1.store_id, (p1.base_price - p2.base_price) / 100.0 AS price_difference FROM item_prices p1 JOIN item_prices p2 ON p1.item_id = p2.item_id AND p1.store_id = p2.store_id WHERE p1.effective_date > p2.effective_date AND p1.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = p1.item_id AND store_id = p1.store_id) AND p2.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = p1.item_id AND store_id = p1.store_id AND effective_date < p1.effective_date)) SELECT s.store_name, AVG(price_difference) AS avg_price_change FROM price_changes pc JOIN stores s ON pc.store_id = s.id GROUP BY s.id ORDER BY avg_price_change DESC",
+                    "title": "Average Price Change by Store",
+                    "description": "Shows the average price change across all items for each store"
+                },
+                "price_volatility": {
+                    "sql": "WITH price_stats AS (SELECT item_id, store_id, COUNT(*) AS price_change_count, MAX(base_price) - MIN(base_price) AS price_range FROM item_prices GROUP BY item_id, store_id) SELECT m.name, s.store_name, ps.price_change_count, ps.price_range, (ps.price_range * ps.price_change_count) AS volatility_score FROM price_stats ps JOIN menu_items m ON ps.item_id = m.id JOIN stores s ON ps.store_id = s.id ORDER BY volatility_score DESC LIMIT 20",
+                    "title": "Price Volatility",
+                    "description": "Identifies items with the most volatile prices based on frequency of changes and price range"
+                },
                 "amenities_summary": {
-                    "sql": "SELECT COUNT(*) as total_stores, SUM(CASE WHEN json_extract(amenities, '$.24Hours') = true THEN 1 ELSE 0 END) as stores_24h, SUM(CASE WHEN json_extract(amenities, '$.Cashless') = true THEN 1 ELSE 0 END) as stores_cashless, SUM(CASE WHEN json_extract(amenities, '$.FreeWifi') = true THEN 1 ELSE 0 END) as stores_with_wifi, SUM(CASE WHEN json_extract(amenities, '$.MobileOrderandPay') = true THEN 1 ELSE 0 END) as stores_with_mobile_order, SUM(CASE WHEN json_extract(amenities, '$.NitroColdBrew') = true THEN 1 ELSE 0 END) as stores_with_nitro, SUM(CASE WHEN json_extract(amenities, '$.StarbucksReserve') = true THEN 1 ELSE 0 END) as reserve_stores FROM stores",
+                    "sql": "SELECT COUNT(*) AS total_stores, SUM(CASE WHEN json_extract(amenities, '$.24Hours') = true THEN 1 ELSE 0 END) AS stores_24h, SUM(CASE WHEN json_extract(amenities, '$.Cashless') = true THEN 1 ELSE 0 END) AS stores_cashless, SUM(CASE WHEN json_extract(amenities, '$.FreeWifi') = true THEN 1 ELSE 0 END) AS stores_with_wifi, SUM(CASE WHEN json_extract(amenities, '$.MobileOrderandPay') = true THEN 1 ELSE 0 END) AS stores_with_mobile_order, SUM(CASE WHEN json_extract(amenities, '$.NitroColdBrew') = true THEN 1 ELSE 0 END) AS stores_with_nitro, SUM(CASE WHEN json_extract(amenities, '$.StarbucksReserve') = true THEN 1 ELSE 0 END) AS reserve_stores FROM stores",
                     "title": "Amenities Summary",
                     "description": "Provides a summary of how many stores offer each amenity"
-                },
-                "stores_with_wifi_and_mobile_order": {
-                    "sql": "SELECT store_name, address, postal_code, phone_no, longitude, latitude, json_extract(amenities, '$.FreeWifi') as has_wifi, json_extract(amenities, '$.MobileOrderandPay') as has_mobile_order FROM stores WHERE json_extract(amenities, '$.FreeWifi') = true AND json_extract(amenities, '$.MobileOrderandPay') = true",
-                    "title": "Stores with Free WiFi and Mobile Order & Pay",
-                    "description": "Lists all Starbucks stores in Singapore that offer both free WiFi and Mobile Order & Pay service, including their geographic coordinates",
-                    "plugins": {
-                        "datasette-cluster-map": {
-                            "latitude_column": "latitude",
-                            "longitude_column": "longitude",
-                            "popup_html": "<b>{store_name}</b><br>Address: {address}<br>Phone: {phone_no}"
-                        }
-                    }
                 }
             },
             "tables": {
