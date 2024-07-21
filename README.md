@@ -1,8 +1,8 @@
-# StarbucksDB
+# Starbucks DB
 
 [![Scrape latest data](https://github.com/ngshiheng/starbucksdb/actions/workflows/scrape.yml/badge.svg)](https://github.com/ngshiheng/starbucksdb/actions/workflows/scrape.yml)
 
-StarbucksDB is a data collection and storage project focused on Starbucks store and menu information. It uses web scraping techniques to gather data about Starbucks locations, menu items, and pricing, storing this information in a SQLite database for easy access and analysis.
+This is a data collection and storage project focused on Starbucks Singapore store and menu information. It uses web scraping techniques to gather data about Starbucks locations, menu items, and pricing, storing this information in a SQLite database for easy access and analysis.
 
 ## How It Works
 
