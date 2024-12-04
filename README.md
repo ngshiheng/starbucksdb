@@ -29,11 +29,11 @@ graph TB
         class api starbucks;
     end
 
-    db --> |1. Download| scraper
-    api --> |2. Fetch Data| scraper
-    scraper --> |3. Upload| db
-    scraper --> |4. Publish| deployment
-    deployment --> |5. View/Access Data| client[User]
+    db --> |1\. Download| scraper
+    api --> |2\. Fetch Data| scraper
+    scraper --> |3\. Upload| db
+    scraper --> |4\. Publish| deployment
+    deployment --> |5\. View/Access Data| client[User]
 
     %% Apply dotted line styles
     style Vercel stroke-dasharray: 5 5;
