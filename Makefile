@@ -4,6 +4,7 @@ ENVIRONMENT ?= development
 SHELL=/bin/bash
 POETRY := $(shell command -v poetry 2> /dev/null)
 DATASETTE := $(shell command -v datasette 2> /dev/null)
+DOCKER := $(shell command -v docker 2> /dev/null)
 SQLITE_FILE = data/starbucks.db
 
 
@@ -25,8 +26,8 @@ dev:	## install packages and prepare environment with poetry.
 
 
 ##@ Usage
-.PHONY: run
-run:	## run spider.
+.PHONY: scrape
+scrape:	## run spider.
 	@rm -rf data/starbucks.db
 	@$(POETRY) run scrapy crawl singapore
 	@echo "Done."
@@ -34,6 +35,23 @@ datasette:	## run datasette.
 	@[ -f $(SQLITE_FILE) ] && echo "File $(SQLITE_FILE) exists." || { echo "File $(SQLITE_FILE) does not exist." >&2; exit 1; }
 	@$(DATASETTE) $(SQLITE_FILE) --metadata data/metadata.json
 
+
+##@ Docker
+IMAGE_NAME := ngshiheng/starbucksdb
+TAG_DATE := $(shell date -u +%Y%m%d)
+
+.PHONY: docker-build
+docker-build:	## build datasette docker image.
+	@[ -f $(SQLITE_FILE) ] && echo "File $(SQLITE_FILE) exists." || { echo "File $(SQLITE_FILE) does not exist." >&2; exit 1; }
+	@if [ -z $(DATASETTE) ]; then echo "Datasette could not be found. See https://docs.datasette.io/en/stable/installation.html"; exit 2; fi
+	datasette package $(SQLITE_FILE) --metadata data/metadata.json --install=datasette-hashed-urls --install=datasette-cluster-map --install=datasette-block-robots --tag $(IMAGE_NAME):$(TAG_DATE)
+	datasette package $(SQLITE_FILE) --metadata data/metadata.json --install=datasette-hashed-urls --install=datasette-cluster-map --install=datasette-block-robots --tag $(IMAGE_NAME):latest
+
+.PHONY: docker-push
+docker-push:	## build and push docker images to registry.
+	@if [ -z $(DOCKER) ]; then echo "Docker could not be found. See https://docs.docker.com/get-docker/"; exit 2; fi
+	docker push $(IMAGE_NAME):$(TAG_DATE)
+	docker push $(IMAGE_NAME):latest
 
 ##@ Contributing
 .PHONY: clean

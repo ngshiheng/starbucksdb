@@ -73,7 +73,7 @@ jobs:
                   key: ${{ runner.os }}-pypoetry-${{ hashFiles('**/poetry.lock') }}-${{ env.today  }}
 
             - name: Run scrapy crawl
-              run: poetry run scrapy crawl singapore
+              run: make scrape
 
             - name: Save scrapy cache
               id: cache-primes-save
@@ -90,9 +90,14 @@ jobs:
                   path: ./data/starbucks.db
                   if-no-files-found: error
 
-            - name: Deploy to vercel
-              env:
-                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-              run: |-
-                  datasette install datasette-publish-vercel
-                  datasette publish vercel data/starbucks.db  --project=starbucksdb --install=datasette-hashed-urls --install=datasette-cluster-map --install=datasette-block-robots --token="$VERCEL_TOKEN" --metadata data/metadata.json --setting allow_download off --setting allow_csv_stream off --extra-options "-i"
+            - name: Login to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                  username: ngshiheng
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+            - name: Build Docker image
+              run: make docker-build
+
+            - name: Push Docker image
+              run: make docker-push
