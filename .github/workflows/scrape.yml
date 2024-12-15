@@ -73,7 +73,7 @@ jobs:
                   key: ${{ runner.os }}-pypoetry-${{ hashFiles('**/poetry.lock') }}-${{ env.today  }}
 
             - name: Run scrapy crawl
-              run: make scrape
+              run: poetry run scrapy crawl singapore
 
             - name: Save scrapy cache
               id: cache-primes-save
