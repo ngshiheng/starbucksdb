@@ -101,3 +101,58 @@ jobs:
 
             - name: Push Docker image
               run: make docker-push
+
+    deploy:
+        needs: scrape-and-build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out this repo
+              uses: actions/checkout@v4
+
+            - name: Get Latest Deployment ID
+              id: get-deployment
+              run: |
+                  echo "Fetching latest deployment ID..."
+                  RESPONSE=$(curl --fail-with-body -s -X POST \
+                    -H "Content-Type: application/json" \
+                    -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+                    -H "User-Agent: GitHub-Actions" \
+                    --url https://backboard.railway.app/graphql/v2 \
+                    -d '{
+                      "query": "query deployments { deployments(last: 1, input: { projectId: \"${{ secrets.RAILWAY_PROJECT_ID }}\", environmentId: \"${{ secrets.RAILWAY_ENVIRONMENT_ID }}\", serviceId: \"${{ secrets.RAILWAY_SERVICE_ID }}\", status: { in: [SUCCESS] } }) { edges { node { id status } } } }",
+                      "operationName": "deployments"
+                    }')
+
+                  echo "API Response:"
+                  echo "$RESPONSE"
+
+                  if echo "$RESPONSE" | jq -e '.errors'; then
+                    echo "Error in API response"
+                    exit 1
+                  fi
+
+                  DEPLOYMENT_ID=$(echo "$RESPONSE" | jq -r '.data.deployments.edges[0].node.id')
+                  echo "Found deployment ID: $DEPLOYMENT_ID"
+                  echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+
+            - name: Trigger Redeployment
+              run: |
+                  echo "Triggering redeployment for ID: ${{ steps.get-deployment.outputs.deployment_id }}"
+                  RESPONSE=$(curl --fail-with-body -s -X POST \
+                    -H "Content-Type: application/json" \
+                    -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+                    -H "User-Agent: GitHub-Actions" \
+                    --url https://backboard.railway.app/graphql/v2 \
+                    -d "{
+                      \"query\": \"mutation { deploymentRedeploy(id: \\\"${{ steps.get-deployment.outputs.deployment_id }}\\\", usePreviousImageTag: true) { id status } }\"
+                    }")
+
+                  echo "API Response:"
+                  echo "$RESPONSE"
+
+                  if echo "$RESPONSE" | jq -e '.errors'; then
+                    echo "Error in API response"
+                    exit 1
+                  fi
+
+                  echo "Successfully triggered redeployment with ID: $REDEPLOY_ID"
