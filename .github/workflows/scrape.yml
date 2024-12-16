@@ -19,7 +19,7 @@ env:
     POETRY_URL: https://install.python-poetry.org
 
 jobs:
-    crawl-and-update:
+    scrape-and-build:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
