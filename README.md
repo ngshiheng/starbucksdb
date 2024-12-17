@@ -8,9 +8,9 @@ This is a data collection and storage project focused on Starbucks Singapore sto
 
 ```mermaid
 graph TB
-    subgraph Vercel
+    subgraph Railway
         deployment[Datasette]
-        class deployment vercel;
+        class deployment railway;
     end
 
     subgraph GitHub
