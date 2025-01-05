@@ -10,35 +10,29 @@ This is a data collection and storage project focused on Starbucks Singapore sto
 graph TB
     subgraph Railway
         deployment[Datasette]
-        class deployment railway;
+        class deployment vercel;
     end
-
     subgraph GitHub
         subgraph Actions
-            scraper[Scrapy Job]
-            class scraper actions;
+            scraper[scrape.py]
         end
         subgraph Artifacts
-            db[(SQLite)]
+            db[(starbucks.db)]
             class db artifacts;
         end
     end
-
     subgraph Starbucks
         api[API]
-        class api starbucks;
     end
-
+    subgraph DockerHub
+        dockerhub[Docker Hub]
+    end
     db --> |1: Download| scraper
     api --> |2: Fetch Data| scraper
     scraper --> |3: Upload| db
-    scraper --> |4: Publish| deployment
-    deployment --> |5: View/Access Data| client[User]
-
-    %% Apply dotted line styles
-    style Vercel stroke-dasharray: 5 5;
-    style GitHub stroke-dasharray: 5 5;
-    style Starbucks stroke-dasharray: 5 5;
+    scraper --> |4: Publish to Docker Hub| dockerhub
+    dockerhub --> |5: Pull Image and Deploy| deployment
+    deployment --> |6: View/Access Data| client[User]
 ```
 
 ## Installation
