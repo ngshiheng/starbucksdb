@@ -7,10 +7,10 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.13.1"
-scrapy = "2.11.2"
-peewee = "3.17.5"
-colorlog = "6.8.2"
+python = "^3.11"
+scrapy = "^2.11.2"
+peewee = "^3.17.5"
+colorlog = "^6.8.2"
 
 
 [build-system]
