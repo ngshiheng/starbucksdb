@@ -77,7 +77,7 @@ jobs:
                   key: ${{ runner.os }}-pyuv-${{ hashFiles('**/uv.lock') }}-${{ env.today  }}
 
             - name: Run scrapy crawl
-              run: make run
+              run: uv run scrapy crawl singapore
 
             - name: Save scrapy cache
               id: cache-primes-save
