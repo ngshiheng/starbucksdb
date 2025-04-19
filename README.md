@@ -38,14 +38,13 @@ graph TB
 ## Installation
 
 1. Clone the repository: `git clone https://github.com/ngshiheng/starbucksdb.git`
-2. Install dependencies using Poetry: `poetry install --no-root`
-3. Activate the virtual environment: `poetry shell`
+2. Install `uv`
 
 ## Usage
 
 ```sh
 # To run the spider and collect data:
-poetry run scrapy crawl singapore
+make run
 ```
 
 ## Database Schema
