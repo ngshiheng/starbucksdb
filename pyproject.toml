@@ -6,7 +6,7 @@ authors = []
 requires-python = "~=3.13"
 readme = "README.md"
 license = "MIT"
-dependencies = ["scrapy>=2.11.2,<3", "peewee>=3.17.5,<4", "colorlog>=6.8.2,<7"]
+dependencies = ["scrapy==2.12.0", "peewee==3.17.9", "colorlog==6.9.0"]
 
 [build-system]
 requires = ["hatchling"]
