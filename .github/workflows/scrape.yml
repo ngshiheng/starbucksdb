@@ -32,7 +32,7 @@ jobs:
 
             - name: Install Datasette
               run: |
-                  uv pip install datasette
+                  uv tool install datasette
 
             - name: Get latest artifact id
               run: |
