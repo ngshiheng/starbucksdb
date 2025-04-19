@@ -38,7 +38,7 @@ jobs:
               id: check-artifacts
               run: |
                   # Get latest successful workflow run from main branch
-                  SUCCESSFUL_RUN_ID=$(curl -s "https://api.github.com/repos/${{ github.repository }}/actions/runs?branch=main&status=completed&conclusion=success&per_page=1" | jq '.workflow_runs[0].id')
+                  SUCCESSFUL_RUN_ID=$(curl -s "https://api.github.com/repos/${{ github.repository }}/actions/runs?branch=main&status=success&exclude_pull_requests=true&per_page=1" | jq '.workflow_runs[0].id')
                   echo "Latest successful run ID from main branch: $SUCCESSFUL_RUN_ID"
 
                   if [ "$SUCCESSFUL_RUN_ID" = "null" ]; then
