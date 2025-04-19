@@ -15,6 +15,11 @@ class SingaporeSpider(scrapy.Spider):
         yield scrapy.Request(url=stores_url, callback=self.parse_stores)
 
     def parse_stores(self, response):
+        """
+        @url https://static.sbux.mobi/json/mop/stores.json
+        @returns items 1 200
+        @returns requests 1 200
+        """
         stores_data = json.loads(response.body)["Data"]
 
         for store in stores_data:
