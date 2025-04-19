@@ -1,18 +1,17 @@
-[tool.poetry]
+[project]
 name = "starbucksdb"
 version = "0.1.0"
 description = ""
-authors = ["Jerry Ng <ngshiheng@gmail.com>"]
-license = "MIT"
+authors = [{ name = "Jerry Ng", email = "ngshiheng@gmail.com" }]
+requires-python = "~=3.11"
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.11"
-scrapy = "^2.11.2"
-peewee = "^3.17.5"
-colorlog = "^6.8.2"
-
+license = "MIT"
+dependencies = [
+    "scrapy>=2.11.2,<3",
+    "peewee>=3.17.5,<4",
+    "colorlog>=6.8.2,<7",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
