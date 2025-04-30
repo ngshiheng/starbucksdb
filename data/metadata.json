@@ -8,10 +8,10 @@
     "databases": {
         "starbucks": {
             "queries": {
-                "find_menu_prices": {
+                "current_menu_prices": {
                     "sql": "SELECT s.store_name, s.address, m.name AS item_name, p.base_price / 100.0 AS price_sgd, json_object('title', s.store_name, 'description', m.name || ' price: S$' || ROUND(p.base_price/100.0, 2), 'link', '/starbucks/stores?store_name=' || s.store_name) AS popup, s.longitude, s.latitude FROM stores s JOIN menu_items m ON s.id = m.store_id JOIN item_prices p ON m.id = p.item_id AND s.id = p.store_id WHERE CASE WHEN :item_name IS NULL OR :item_name = '' THEN m.name = 'Caffè Latte' WHEN SUBSTR(:item_name, 1, 1) = '=' THEN m.name = SUBSTR(:item_name, 2) ELSE m.name LIKE '%' || :item_name || '%' END AND p.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = m.id AND store_id = s.id) ORDER BY price_sgd DESC LIMIT CASE WHEN :limit IS NULL OR :limit = '' THEN 20 ELSE :limit END",
-                    "title": "Find Menu Prices by Location",
-                    "description": "See current prices of Starbucks items across Singapore locations. Default shows Caffè Latte prices. For item_name: use '=Pure Matcha Latte' for exact match or 'Pure Matcha Latte' for fuzzy search.",
+                    "title": "Current Menu Prices Map",
+                    "description": "Map of current prices across all stores. Default: Caffè Latte. For exact match: use '=Pure Matcha Latte'; for fuzzy search: use 'Matcha'.",
                     "params": [
                         "item_name",
                         "limit"
@@ -23,12 +23,11 @@
                         }
                     }
                 },
-                "budget_friendly_stores": {
-                    "sql": "WITH store_avg_prices AS (SELECT s.id, s.store_name, s.address, s.longitude, s.latitude, COUNT(DISTINCT m.name) AS menu_item_count, AVG(p.base_price/100.0) AS avg_price, MIN(p.base_price/100.0) AS min_price, json_object('title', s.store_name, 'description', 'Avg price: S$' || ROUND(AVG(p.base_price/100.0), 2) || ' | Items: ' || COUNT(DISTINCT m.name), 'link', '/starbucks/stores?store_name=' || s.store_name) AS popup FROM stores s JOIN menu_items m ON s.id = m.store_id JOIN item_prices p ON m.id = p.item_id AND s.id = p.store_id WHERE p.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = m.id AND store_id = s.id) GROUP BY s.id HAVING menu_item_count >= CASE WHEN :min_items IS NULL OR :min_items = '' THEN 10 ELSE :min_items END) SELECT store_name, address, menu_item_count AS available_items, ROUND(avg_price, 2) AS avg_price_sgd, popup, longitude, latitude FROM store_avg_prices ORDER BY avg_price ASC LIMIT CASE WHEN :limit IS NULL OR :limit = '' THEN 20 ELSE :limit END",
-                    "title": "Budget-Friendly Stores",
-                    "description": "Find the most affordable Starbucks locations in Singapore based on average prices, with a map view to help you locate them.",
+                "cheapest_stores": {
+                    "sql": "WITH store_avg_prices AS (SELECT s.id, s.store_name, s.address, s.longitude, s.latitude, COUNT(DISTINCT m.name) AS menu_item_count, AVG(p.base_price/100.0) AS avg_price, MIN(p.base_price/100.0) AS min_price, json_object('title', s.store_name, 'description', 'Avg price: S$' || ROUND(AVG(p.base_price/100.0), 2) || ' | Items: ' || COUNT(DISTINCT m.name), 'link', '/starbucks/stores?store_name=' || s.store_name) AS popup FROM stores s JOIN menu_items m ON s.id = m.store_id JOIN item_prices p ON m.id = p.item_id AND s.id = p.store_id WHERE p.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = m.id AND store_id = s.id) GROUP BY s.id) SELECT store_name, address, menu_item_count AS available_items, ROUND(avg_price, 2) AS avg_price_sgd, popup, longitude, latitude FROM store_avg_prices ORDER BY avg_price ASC LIMIT CASE WHEN :limit IS NULL OR :limit = '' THEN 20 ELSE :limit END",
+                    "title": "Cheapest Starbucks Stores",
+                    "description": "Find most affordable stores ranked by average menu price, with map view to locate them.",
                     "params": [
-                        "min_items",
                         "limit"
                     ],
                     "plugins": {
@@ -38,10 +37,10 @@
                         }
                     }
                 },
-                "items_with_largest_hikes": {
-                    "sql": "WITH price_diff AS (SELECT m.name AS item_name, s.store_name, s.address, p2.base_price / 100.0 AS old_price, p1.base_price / 100.0 AS new_price, (p1.base_price - p2.base_price) / 100.0 AS price_difference, p2.effective_date AS old_date, p1.effective_date AS new_date, ROW_NUMBER() OVER (PARTITION BY m.name ORDER BY (p1.base_price - p2.base_price) DESC) AS rank, json_object('title', s.store_name, 'description', m.name || ' | Increase: S$' || ROUND((p1.base_price - p2.base_price)/100.0, 2), 'link', '/starbucks/stores?store_name=' || s.store_name) AS popup, s.longitude, s.latitude FROM item_prices p1 JOIN item_prices p2 ON p1.item_id = p2.item_id AND p1.store_id = p2.store_id JOIN menu_items m ON p1.item_id = m.id JOIN stores s ON p1.store_id = s.id WHERE p1.effective_date > p2.effective_date AND p1.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = p1.item_id AND store_id = p1.store_id) AND p2.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = p1.item_id AND store_id = p1.store_id AND effective_date < p1.effective_date) AND (CASE WHEN :item_name IS NULL OR :item_name = '' THEN 1=1 WHEN SUBSTR(:item_name, 1, 1) = '=' THEN m.name = SUBSTR(:item_name, 2) ELSE m.name LIKE '%' || :item_name || '%' END)) SELECT item_name, store_name, address, old_price AS old_price_sgd, new_price AS new_price_sgd, price_difference AS price_increase_sgd, old_date AS previous_date, new_date AS current_date, popup, longitude, latitude FROM price_diff WHERE rank = 1 ORDER BY price_increase_sgd DESC LIMIT CASE WHEN :limit IS NULL OR :limit = '' THEN 20 ELSE :limit END",
-                    "title": "Items with Largest Price Hikes",
-                    "description": "Identify menu items with biggest price increases. For item_name: use '=Pure Matcha Latte' for exact match or 'Pure Matcha Latte' for fuzzy search.",
+                "price_increase_explorer": {
+                    "sql": "WITH price_diff AS (SELECT m.name AS item_name, s.store_name, s.address, p2.base_price / 100.0 AS old_price, p1.base_price / 100.0 AS new_price, (p1.base_price - p2.base_price) / 100.0 AS price_difference, p2.effective_date AS old_date, p1.effective_date AS new_date, ROW_NUMBER() OVER (PARTITION BY m.name ORDER BY (p1.base_price - p2.base_price) DESC) AS rank, json_object('title', s.store_name, 'description', m.name || ' | Increase: S$' || ROUND((p1.base_price - p2.base_price)/100.0, 2), 'link', '/starbucks/stores?store_name=' || s.store_name) AS popup, s.longitude, s.latitude FROM item_prices p1 JOIN item_prices p2 ON p1.item_id = p2.item_id AND p1.store_id = p2.store_id JOIN menu_items m ON p1.item_id = m.id JOIN stores s ON p1.store_id = s.id WHERE p1.effective_date > p2.effective_date AND p1.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = p1.item_id AND store_id = p1.store_id) AND p2.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = p1.item_id AND store_id = p1.store_id AND effective_date < p1.effective_date) AND (CASE WHEN :item_name IS NULL OR :item_name = '' THEN 1=1 WHEN SUBSTR(:item_name, 1, 1) = '=' THEN m.name = SUBSTR(:item_name, 2) ELSE m.name LIKE '%' || :item_name || '%' END)) SELECT item_name, store_name, address, old_price AS old_price_sgd, new_price AS new_price_sgd, price_difference AS price_increase_sgd, old_date AS previous_date, new_date AS current_date, popup, longitude, latitude FROM price_diff WHERE CASE WHEN :item_name IS NULL OR :item_name = '' THEN rank = 1 ELSE 1=1 END ORDER BY CASE WHEN :item_name IS NULL OR :item_name = '' THEN price_difference ELSE item_name END DESC, CASE WHEN :item_name IS NULL OR :item_name = '' THEN 1 ELSE price_difference END DESC LIMIT CASE WHEN :limit IS NULL OR :limit = '' THEN 20 ELSE :limit END",
+                    "title": "Biggest Price Hikes Map",
+                    "description": "Default: shows largest menu price increases. Filter by item_name (e.g., 'Frappuccino' or '=Caffè Americano' for exact match) to see all price changes for specific drinks.",
                     "params": [
                         "item_name",
                         "limit"
@@ -53,20 +52,20 @@
                         }
                     }
                 },
-                "recent_price_changes": {
+                "recent_price_updates": {
                     "sql": "WITH PriceChanges AS (SELECT m.name item_name,ip.base_price new_price,prev.base_price old_price,ip.effective_date,((ip.base_price-prev.base_price)*100.0/prev.base_price) pct_change,COUNT(*)OVER(PARTITION BY m.name,ip.effective_date,ip.base_price,prev.base_price)store_count,GROUP_CONCAT(s.store_name)OVER(PARTITION BY m.name,ip.effective_date,ip.base_price,prev.base_price)affected_stores FROM item_prices ip JOIN menu_items m ON ip.item_id=m.id JOIN stores s ON ip.store_id=s.id LEFT JOIN item_prices prev ON ip.item_id=prev.item_id AND ip.store_id=prev.store_id AND prev.effective_date=(SELECT MAX(effective_date)FROM item_prices p2 WHERE p2.item_id=ip.item_id AND p2.store_id=ip.store_id AND p2.effective_date<ip.effective_date)WHERE ip.effective_date>=date('now','-' || CASE WHEN :days IS NULL OR :days = '' THEN '185' ELSE :days END || ' days')AND prev.base_price IS NOT NULL AND ip.base_price!=prev.base_price AND (CASE WHEN :item_name IS NULL OR :item_name = '' THEN 1=1 WHEN SUBSTR(:item_name, 1, 1) = '=' THEN m.name = SUBSTR(:item_name, 2) ELSE m.name LIKE '%' || :item_name || '%' END))SELECT item_name,old_price/100.0 old_price_sgd,new_price/100.0 new_price_sgd,ROUND(pct_change,2)percentage_change,effective_date change_date,store_count stores_affected,affected_stores FROM PriceChanges GROUP BY 1,2,3,4,5,6,7 ORDER BY effective_date DESC,pct_change DESC LIMIT CASE WHEN :limit IS NULL OR :limit = '' THEN 20 ELSE :limit END",
-                    "title": "Recent Price Changes",
-                    "description": "See recent price changes (past 6 months by default). For item_name: use '=Pure Matcha Latte' for exact match or 'Pure Matcha Latte' for fuzzy search.",
+                    "title": "Recent Price Updates Timeline",
+                    "description": "Price changes in past 6 months (adjust with days parameter). Filter by item (e.g., '=Caffè Americano' for exact, or 'Americano' for partial match).",
                     "params": [
                         "days",
                         "item_name",
                         "limit"
                     ]
                 },
-                "stores_with_highest_changes": {
+                "stores_by_price_inflation": {
                     "sql": "WITH price_changes AS (SELECT p1.store_id, (p1.base_price - p2.base_price) / 100.0 AS price_difference FROM item_prices p1 JOIN item_prices p2 ON p1.item_id = p2.item_id AND p1.store_id = p2.store_id JOIN menu_items m ON p1.item_id = m.id WHERE p1.effective_date > p2.effective_date AND p1.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = p1.item_id AND store_id = p1.store_id) AND p2.effective_date = (SELECT MAX(effective_date) FROM item_prices WHERE item_id = p1.item_id AND store_id = p1.store_id AND effective_date < p1.effective_date)) SELECT s.store_name, s.address, AVG(price_difference) AS avg_change_sgd, json_object('title', s.store_name, 'description', 'Avg price increase: S$' || ROUND(AVG(price_difference), 2), 'link', '/starbucks/stores?store_name=' || s.store_name) AS popup, s.longitude, s.latitude FROM price_changes pc JOIN stores s ON pc.store_id = s.id GROUP BY s.id ORDER BY avg_change_sgd DESC LIMIT CASE WHEN :limit IS NULL OR :limit = '' THEN 20 ELSE :limit END",
-                    "title": "Stores with Highest Price Changes",
-                    "description": "Find which Starbucks locations have increased their prices the most on average.",
+                    "title": "Stores by Price Inflation Map",
+                    "description": "Map of stores ranked by average price increase. Identifies locations with most aggressive pricing trends.",
                     "params": [
                         "limit"
                     ],
@@ -77,10 +76,10 @@
                         }
                     }
                 },
-                "price_history_timeline": {
+                "price_trend_analysis": {
                     "sql": "WITH min_max_dates AS (SELECT MIN(effective_date) AS min_date, MAX(effective_date) AS max_date FROM item_prices), date_series AS (SELECT date(min_date, '+' || (seq*30) || ' days') AS trend_date FROM min_max_dates, (WITH RECURSIVE seq(seq) AS (SELECT 0 UNION ALL SELECT seq+1 FROM seq LIMIT 100) SELECT seq FROM seq) WHERE date(min_date, '+' || (seq*30) || ' days') <= max_date), price_points AS (SELECT ds.trend_date, m.name AS item_name, AVG(p.base_price)/100.0 AS avg_price FROM date_series ds LEFT JOIN item_prices p ON date(p.effective_date) <= ds.trend_date JOIN menu_items m ON p.item_id = m.id WHERE CASE WHEN :item_name IS NULL OR :item_name = '' THEN m.name = 'Caffè Latte' WHEN SUBSTR(:item_name, 1, 1) = '=' THEN m.name = SUBSTR(:item_name, 2) ELSE m.name LIKE '%' || :item_name || '%' END GROUP BY ds.trend_date, m.name) SELECT trend_date date, item_name, avg_price AS avg_price_sgd FROM price_points ORDER BY trend_date LIMIT CASE WHEN :limit IS NULL OR :limit = '' THEN 20 ELSE :limit END",
-                    "title": "Price History Timeline",
-                    "description": "Track price changes over time (default: Caffè Latte). For item_name: use '=Pure Matcha Latte' for exact match or 'Pure Matcha Latte' for fuzzy search.",
+                    "title": "Long-Term Price Trends",
+                    "description": "Historical price data over all time. Default: Caffè Latte. Search for specific items like '=Pure Matcha Latte' (exact) or 'Mocha' (finds all mocha drinks).",
                     "params": [
                         "item_name",
                         "limit"
