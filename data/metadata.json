@@ -109,6 +109,9 @@
     "plugins": {
         "datasette-block-robots": {
             "allow_only_index": true
+        },
+        "datasette-google-analytics": {
+            "tracking_id": "G-9116V3XP5S"
         }
     }
 }
