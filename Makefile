@@ -34,8 +34,8 @@ TAG_DATE := $(shell date -u +%Y%m%d)
 docker-build:	## build datasette docker image.
 	@[ -f $(SQLITE_FILE) ] && echo "File $(SQLITE_FILE) exists." || { echo "File $(SQLITE_FILE) does not exist." >&2; exit 1; }
 	@if [ -z $(DATASETTE) ]; then echo "Datasette could not be found. See https://docs.datasette.io/en/stable/installation.html"; exit 2; fi
-	datasette package $(SQLITE_FILE) --extra-options '--setting allow_download off --setting allow_csv_stream off --setting max_csv_mb 1 --setting default_cache_ttl 86400' --metadata data/metadata.json --install=datasette-cluster-map --install=datasette-hashed-urls --install=datasette-block-robots --install=datasette-vega --install=datasette-google-analytics  --tag $(IMAGE_NAME):$(TAG_DATE)
-	datasette package $(SQLITE_FILE) --extra-options '--setting allow_download off --setting allow_csv_stream off --setting max_csv_mb 1 --setting default_cache_ttl 86400' --metadata data/metadata.json --install=datasette-cluster-map --install=datasette-hashed-urls --install=datasette-block-robots --install=datasette-vega --install=datasette-google-analytics  --tag $(IMAGE_NAME):latest
+	datasette package $(SQLITE_FILE) --extra-options '-i $(SQLITE_FILE) --setting allow_download off --setting allow_csv_stream off --setting max_csv_mb 1 --setting default_cache_ttl 86400' --metadata data/metadata.json --install=datasette-cluster-map --install=datasette-block-robots --install=datasette-vega --install=datasette-google-analytics --tag $(IMAGE_NAME):$(TAG_DATE)
+	datasette package $(SQLITE_FILE) --extra-options '-i $(SQLITE_FILE) --setting allow_download off --setting allow_csv_stream off --setting max_csv_mb 1 --setting default_cache_ttl 86400' --metadata data/metadata.json --install=datasette-cluster-map --install=datasette-block-robots --install=datasette-vega --install=datasette-google-analytics --tag $(IMAGE_NAME):latest
 
 .PHONY: docker-push
 docker-push:	## build and push docker images to registry.
