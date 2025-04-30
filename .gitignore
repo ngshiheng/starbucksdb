@@ -27,3 +27,6 @@ Thumbs.db
 *.db
 *.db-shm
 *.db-wal
+
+# Datasette
+data/inspect.json

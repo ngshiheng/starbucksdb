@@ -21,9 +21,18 @@ run:	## run scraper.
 	@rm -rf data/starbucks.db
 	@uv run scrapy crawl singapore
 	@echo "Done."
-datasette:	## run datasette.
+
+.PHONY: inspect
+inspect:	## generate inspect file for performance optimization.
 	@[ -f $(SQLITE_FILE) ] && echo "File $(SQLITE_FILE) exists." || { echo "File $(SQLITE_FILE) does not exist." >&2; exit 1; }
-	@$(DATASETTE) $(SQLITE_FILE) --metadata data/metadata.json
+	@$(DATASETTE) inspect $(SQLITE_FILE) --inspect-file=data/inspect.json
+	@echo "Generated inspect file at data/inspect.json"
+
+.PHONY: datasette
+datasette:	## run datasette with optimizations matching the Docker build.
+	@[ -f $(SQLITE_FILE) ] && echo "File $(SQLITE_FILE) exists." || { echo "File $(SQLITE_FILE) does not exist." >&2; exit 1; }
+	@if [ ! -f data/inspect.json ]; then $(MAKE) inspect; fi
+	@$(DATASETTE) --immutable $(SQLITE_FILE) --inspect-file=data/inspect.json --setting allow_download off --setting allow_csv_stream off --setting max_csv_mb 1 --setting default_cache_ttl 604800 --metadata data/metadata.json --plugins-dir=plugins
 
 
 ##@ Docker
@@ -34,8 +43,9 @@ TAG_DATE := $(shell date -u +%Y%m%d)
 docker-build:	## build datasette docker image.
 	@[ -f $(SQLITE_FILE) ] && echo "File $(SQLITE_FILE) exists." || { echo "File $(SQLITE_FILE) does not exist." >&2; exit 1; }
 	@if [ -z $(DATASETTE) ]; then echo "Datasette could not be found. See https://docs.datasette.io/en/stable/installation.html"; exit 2; fi
-	datasette package $(SQLITE_FILE) --extra-options '-i $(SQLITE_FILE) --setting allow_download off --setting allow_csv_stream off --setting max_csv_mb 1 --setting default_cache_ttl 86400' --metadata data/metadata.json --install=datasette-cluster-map --install=datasette-block-robots --install=datasette-vega --install=datasette-google-analytics --tag $(IMAGE_NAME):$(TAG_DATE)
-	datasette package $(SQLITE_FILE) --extra-options '-i $(SQLITE_FILE) --setting allow_download off --setting allow_csv_stream off --setting max_csv_mb 1 --setting default_cache_ttl 86400' --metadata data/metadata.json --install=datasette-cluster-map --install=datasette-block-robots --install=datasette-vega --install=datasette-google-analytics --tag $(IMAGE_NAME):latest
+	datasette inspect $(SQLITE_FILE) --inspect-file=data/inspect.json
+	datasette package $(SQLITE_FILE) --extra-options '--immutable $(SQLITE_FILE) --inspect-file data/inspect.json --setting allow_download off --setting allow_csv_stream off --setting max_csv_mb 1 --setting default_cache_ttl 604800' --metadata data/metadata.json --install=datasette-cluster-map --install=datasette-gzip --install=datasette-block-robots --install=datasette-vega --install=datasette-google-analytics --tag $(IMAGE_NAME):$(TAG_DATE)
+	datasette package $(SQLITE_FILE) --extra-options '--immutable $(SQLITE_FILE) --inspect-file data/inspect.json --setting allow_download off --setting allow_csv_stream off --setting max_csv_mb 1 --setting default_cache_ttl 604800' --metadata data/metadata.json --install=datasette-cluster-map --install=datasette-gzip --install=datasette-block-robots --install=datasette-vega --install=datasette-google-analytics --tag $(IMAGE_NAME):latest
 
 .PHONY: docker-push
 docker-push:	## build and push docker images to registry.
@@ -48,3 +58,11 @@ docker-push:	## build and push docker images to registry.
 clean:	## clean all local cache.
 	@find . -type d -name "__pycache__" | xargs rm -rf {};
 	@rm -rf .scrapy
+
+.PHONY: setup-dev
+setup-dev:	## install development dependencies including required Datasette plugins.
+	@if [ -z $(DATASETTE) ]; then echo "Installing Datasette..."; pip install datasette; fi
+	@echo "Installing required Datasette plugins..."
+	@pip install datasette-cluster-map datasette-gzip datasette-block-robots datasette-vega datasette-google-analytics
+	@mkdir -p plugins
+	@echo "Setup complete! Run 'make datasette' to start local development server."
