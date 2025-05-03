@@ -32,7 +32,7 @@ inspect:	## generate inspect file for performance optimization.
 datasette:	## run datasette with optimizations matching the Docker build.
 	@[ -f $(SQLITE_FILE) ] && echo "File $(SQLITE_FILE) exists." || { echo "File $(SQLITE_FILE) does not exist." >&2; exit 1; }
 	@if [ ! -f data/inspect.json ]; then $(MAKE) inspect; fi
-	@$(DATASETTE) --immutable $(SQLITE_FILE) --inspect-file=data/inspect.json --setting allow_download off --setting allow_csv_stream off --setting max_csv_mb 1 --setting default_cache_ttl 604800 --metadata data/metadata.json --plugins-dir=plugins
+	@$(DATASETTE) --immutable $(SQLITE_FILE) --inspect-file=data/inspect.json --setting allow_download off --setting allow_csv_stream off --setting max_csv_mb 1 --setting default_cache_ttl 604800 --metadata data/metadata.json
 
 
 ##@ Docker
